@@ -1,0 +1,100 @@
+what happens after init?
+
+the init system starts several daemons 
+
+daemons are:
+- background processes
+- non-interactive tasks
+	- accepting ssh sessions
+	- configuring the network
+	- logging error messages
+- generally have a 'd' suffix
+- provides a service
+- run in user space
+
+ps -e --no-header | grep '$d' | awk '{$4}' | sort | grep -v 'kworker'
+- find everything that ends with d
+- awk is a little scripting language (used before python was a thing)
+	- script of {$4} changes the columns into printable variables
+- grep -v inverts, so avoids all that matches the keywords
+
+if learning vim, type $ to jump right to the end of the line, type 0 to go to start of line
+w to go forward by a word, b to go backward, f to jump between pipes
+
+#!/usr/bin/env bash
+- uses env to find bash
+- alternatively: #!/bin/bash
+
+if you want python script (and everything written after will be taken as python)
+#!/bin/python
+
+to make the script executable, change the mode in command line (rewatch his vid whoops)
+
+linux - monolithic kernel
+macOS - splits kernel into a bunch of pieces (so a lot of background services in a mac)
+
+daemons are just regular processes ('user space programs')
+- use system calls to perform privileged operations
+	- system calls: API of the OS
+
+Virtualising the CPU
+- Allows multiple programs to run concurrently
+- Takes CPU and pretend like you can divide it up even though it's just 1 CPU
+
+Can we use half a core?
+- more of a measurement of time than capacity
+	- eg. in 1s, program used core 34% of the time
+
+levels of virtualisation:
+
+full virtualisation
+- look at everything and make sure we want to build it
+- basically an emulator
+
+direct execution
+- allows process to run directly on the hardware
+	- has complete control
+
+limited direct execution
+- for certain (safe) operations, processes are given full access to CPU/hardware
+- some privileged operations are done in kernel and require special permission
+	- privileged operations are SYSTEM CALLS
+	- process doesn't have direct access to hardware
+
+fork() is not directly calling into kernel space
+
+interrupt handler: scheduling
+- hardware telling os something happened
+
+ring 1 for hypervisors 
+
+all risc-v processors have machine mode
+- basic requirement
+fancier CPU has supervisor mode, user mode
+
+asm volatile("mret");
+	- return out of machine mode
+	- set to return main by setting M exception program counter to main for mret
+	- supervisor mode starts out in main
+
+transferring control is called a TRAP
+- moves execution pointer and changes the privilege level
+- once operation is complete, a return-from-trap is executed
+	- privilege level is dropped and control is returned to process routines
+
+during boot, OS has exclusive control of hardware and sets up the trap table
+
+interrupt:
+signal to processor that some type of event needs to be handled
+- will freeze if there are too many interrupts
+
+(they used to use polling, constant checking which is very inefficient)
+
+100% system means that it'll be super slow since it spends more time talking to kernel than actually doing stuff
+
+redesigning fgets to use fewer system calls (read())
+1. why are we doing this? to find the /n
+2. instead? read 100 chars (loop through to find \n)
+	- just by virtue of reducing number of system calls, this will be faster
+	- but what would you do with the extra data?
+

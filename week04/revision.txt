@@ -1,0 +1,122 @@
+# Virtualisation
+- Providing a set of virtual interfaces instead of exposing hardware directly to program
+	- Programs don't have to worry about the system
+
+  1. Full virtualisation
+  		~ Trap and translate all instructions to make the process believe it's running on another platform
+		'-' Inefficient (~doubles the amount of instructions needed)
+  		'+' Security
+  		
+  2. Direct execution
+  		~ Allows process to run directly on the hardware
+  		'-' Security and reliability risks (poorly-written code)
+  		'+' Super fast
+  3. Limited direct execution
+  		~ For certain (safe) operations, processes are given full access to CPU/hardware
+  		~ Some privileged operations are not allowed (process asks kernel via system call)
+
+# Two parts of OS
+1. User space
+	- For user-facing interfaces (what the user interacts with)
+2. Kernel space
+	- Provides functionality that makes virtualising hardware possible
+	- Performs privileged operations
+		- Security, reliability, resource management
+
+# Booting Up
+1. BIOS (Basic Input-Output System)
+	- Starts iterating through disks (MBR)
+
+	- MBR consists of two parts:
+		1. Boot code
+			- Code responsible for continuing the boot process
+		2. Partition table
+			- Contains pointers to where each partition starts (16 bytes each; 4 partitions max)
+	- Looks for the 0x55AA flag (bootable flag)
+	- Write to memory 
+3. Runs bootloader
+	- Starts the OS
+	- After booting, init system takes over
+4. Init/Systemd (PID 1)
+	- Starts all other processes (System services, start up tasks, etc)
+
+	** Daemons: Background processes, non-interactive
+		- Provides some kind of service for other processes
+		- Most daemons are regular "user space" programs and still need to make system calls
+
+# Processes
+	- fork(): Creates a process, return child's PID
+	
+	- exec(char *file, char *argv[]): Load a file and execute it with arguments  (
+				- Does not create new process, just changes program file that existing program is running
+				- Wipes out memory state of calling process)
+				
+	- wait(int *status): Wait for a child process to exit, exit status in &status, returns child PID
+
+	** Why split up fork() and exec()?
+		~ Allows us to manipulate the environment of new process before it executes; used in:
+			- Pipes
+			- Redirection
+			- Setting environment variables
+
+	- Processes get _scheduled_ to run
+		Scheduler:
+		1. Chooses stuff to run (looks for runnable flag)
+		2. Timer sends an interrupt at predefined interval
+		3. When interrupted, processes get _preempted_ and a new process runs
+
+		- Context switch: Swapping process control blocks
+			- Process Control Block consists of:
+				1. Executable machine code
+				2. Memory (isolated from other processes)
+					- Call stack
+					- Heap
+				3. Metadata
+					- Permissions, ownership
+					- Open files and access isolation
+					- Environment variables
+				4. Context
+					- Registers
+					- Stack pointer, program counter
+					- Memory addressing
+
+			** only one active PCB per CPU
+				- As program runs, OS may interrupt it to pause its execution
+				- PCBs store information about running processes (i.e. Variables, call stack, heap, etc)
+
+Basic State Transitions
+
+-> Ready <-> Running -> Terminated
+   <-> Blocked <->
+
+Process States (on Linux):
+- R (Running)
+- S (Sleeping)
+- D (Disk sleep)
+- T (Stopped)
+- T (Tracing Stop)
+- Z (Zombie)
+- X (Dead)
+
+Process States (xv6):
+- Unused
+- Used
+- Sleeping
+- Runnable
+- Running
+- Zombie
+
+Termination
+1. Clean exit
+2. Error exit
+3. Involuntary exit
+
+Upon exiting, the OS:
+- Deallocates memory assigned to the process
+- Closes any open files
+- Releases locks
+- Cancels any timers
+
+0 - STDIN
+1 - STDOUT
+2 - STDERR

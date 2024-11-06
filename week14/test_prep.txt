@@ -1,0 +1,68 @@
+# Why do we care about memory?
+- Programs get memory from Operating System
+- Programs might use malloc/free, but that's it! (A fake view of what is going on)
+
+# Memory Isolation
+- We "fence" processes in between base & bound pairs
+- Lie to them about the actual address location (Virtual memory)
+- We use address translation to go from fake (virtual) address to physical memory
+  - Can be slow, doing math every time we want to access memory BUT MMU (hardware unit)
+    accelerates it
+    - If program asks for 0x20, return base + 0x20
+
+  - Store base & bound in PCB so every time we try to retrieve info for a process, it is there
+
+Speed differential between RAM (main memory) and disk
+- We can't just swap memory out to the disk every time we switch programs
+
+# Fragmentation
+- Gaps between memory allocations
+- We can help somewhat by using segmentation, but paging solves it
+
+# Segments
+~ Chunks of the program's memory
+  - Eg: (The memory diagram stuff, stack, heap, etc)
+  - Each segment has a base & bound pair
+
+  - Segments have protection bits (Permissions) 
+    - What segments need which? Read, executable, write
+
+# Free Space Management (FSM) Algorithms
+1. First Fit
+2. Best Fit
+3. Worst Fit
+
+# Paging
+- Use paging to allocate non-contiguous regions of memory
+- Each page of memory can be mapped to a process
+
+- Usual page size is 4096 bytes
+- Each process has a page table (MAINTAINED BY KERNEL)
+
+- Translation Process (a hardware feature)
+- The number of pages you can have is NOT limited by memory
+  - When page gets loaded, it copies everything over to the new page
+
+For lab07, just use lists :D (xv6 uses list too)
+- But in the real world, they usually use data structures (queues, min heap)
+
+-- OFFICE HOUR QUESTIONS --
+Process A: 
+Mem addr 50
+
+Process B:
+Mem addr 100
+
+Physical addr: 300 (Both mapped to same physical addr)
+
+Page table:
+An array and you index into the array
+- Process A indexes into mem addr 50 which has a pointer to the physical address
+  - But we have levels of indirection, dir --> page # --> offset
+
+- Paging is kind of like base & bound pairs, except we have set intervals between the bases and the bounds
+
+- tlb: finds where page is a lot faster
+- most os, after ls quits, they still leave the pages loaded in memory
+  - but mark them as unused
+

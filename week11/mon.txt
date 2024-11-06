@@ -1,0 +1,64 @@
+#Multi-Level Feedback Queues
+- Build on priority scheduling - different tasks will run with different priorities
+
+1. Not all task has the same resource requirements
+  - Your browser: Needs CPU frequently
+  - Time Sync Daemon: Needs CPU rarely
+
+  ** Prioritise into multiple queues (Multi-Level Queues)
+
+  High priority (Short Quantum): System
+  Middle priority: Interactive
+  Low priority (Long Quantum): Batch
+
+  - Many implementations have different scheduling algorithms per queue
+
+  Tentative (Check slides):
+  1. System: FIFO
+    - Must be empty before moving to interactive queue
+  2. Interactive: 
+
+## Dynamic Priority
+
+### Priorities Change
+  - Windows reduces the priority when you minimise something
+  - Bursty workloads: Task sits idle 70% of the time, but super intensive 30% of the time
+
+### Assigning Priorities
+  -- Class Discussion --
+  1. Ignore sleeping processes
+  2. Put similar tasks in same queues
+
+  Preventing hogging:
+    - Timestamps
+    - Task timer (pre-emptive; Task gets a minute, then it gets frozen and the OS moves on to the next person)
+      - Can deprioritise them
+
+  -- Slides --
+  Reactive scheduling
+    - Start the process in a queue based on its resource requirements and move it based on its usage pattern
+    - Process aging: Processes that use more CPU will be moved to lower priorities over time
+    - Stop using so much CPU? Priority will gradually be boosted
+
+## MLFQ
+  1. Favour short jobs
+  2. Favour I/O bound jobs
+  3. Split processes into queues based on usage needs
+
+  - Processes enter at the highest priority queue
+  
+  - When their turn comes, the process runs and does one of the following:
+    1. Finishes execution (Task COMPLETE, removed from queue)
+    2. Relinquishes control of the CPU (Task returns to end of its CURRENT queue)
+    3. Gets preempted by the OS (Task gets DEMOTED to lower queue)
+
+  - If process blocks for I/O, gets bumped up in priority because it doesn't use CPU while it is blocked
+  
+Niceness: Priority WITHIN the queue
+
+### Tricking MLFQ
+  Method: Stop before quantum is up so you can stay in your queue
+  Fix: Keep track of the amount of time they didn't use, and once they use that up, drop them down
+    - Keep track of their CPU time across all queues
+
+** The lower the priority queue, the longer the scheduling quantum (CPU Time Accounting)

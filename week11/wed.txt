@@ -1,0 +1,38 @@
+# CPU Scheduling
+
+## Context Switching
+  - Process Control Block (process struct in xv6)
+
+## Interrupts for Context Switching (Preemptive Scheduling)
+## Cooperative Multitasking (What is it, what are its weaknesses)
+
+## Scheduling Quantum
+## I/O while scheduling (disk, network, etc)
+
+# Scheduling Algorithms
+## Scheduling Metrics
+## Basic Scheduling Algorithms
+### FIFO
+### SJC
+### STJF
+### STCF
+### Round Robin (RR)
+### Lottery
+### Priority
+
+## Scheduling with I/O
+- When we do I/O, we are blocking
+
+## Multi-Level Feedback Queues (MLFQ)
+### What a regular MLQ looks like
+### How do we prioritise tasks? Do we know how long they will run ahead of time? Do we know their resource requirements?
+### What is MLFQ designed for?
+### What are its main goals?
+### Actual steps of MLFQ
+### Nice level
+### Starvation and Fork Bombing
+
+- Know what they do
+- Know their strengths and weaknesses
+
+** Not tested on real-time operating systems

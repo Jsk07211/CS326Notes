@@ -1,0 +1,108 @@
+Study Guide (8 - 10 qns, 15 minutes, 1/2 MCQ, 1/2 short answer questions - generally answerable in 1-2 sentences)
+1. Stuff about C
+	- Will not ask if C is pass by value
+	- What are pointers useful for?
+	- Error checking, arguments: usually return value indicates success/failure; args may be outputs
+	- Arrays, mutability, string literals, null bytes, array decay
+2. Lab 1 - Lab 3
+	Lab 1 Broken.c:
+	- You can go out of bounds of C arrays
+	- Mutable vs immutable memory
+	- Have to allocate memory before you can use it
+	- String stuff: how strlen() gives length without \0
+	- returning pointers to stuff that was allocated on the stack inside a function is not good :<
+
+	Lab 2 Getline:
+	- how to reallocate memory in xv6?
+	- how to read files with system calls?
+	- file descriptors 
+		- open() for fd, read in its name
+	- read via chunks of bytes (not even lines :<)
+		- do it in a loop, each read gets the next chunk
+			- supported by kernel keeping track of where we are in the file
+
+	Lab 3 System Call:
+	- How user and kernel space both have their own "implementations" of the system calls, and then user space programs call them to do whatever the system call does
+	- What happens when you try to access kernel memory directly from user space?
+		- It'll break
+	- volatile 
+		- flags it as something that changes outside of scope
+		-- since caching, optimisations that occur need to know this
+	
+	
+3. What is an operating system
+	- Virtualisation
+		- Making hardware into "virtual" stuff that we don't have to understand
+			- Eg. driver for a mouse or something
+	- User space and kernel space
+		- Security, resource management, ease of use for user space (we have to do system calls otherwise),
+		  reliability (a lot of crashing before the split), encapsulation
+
+		- User space: User-facing interfaces, resources, what the user interacts with
+		- Kernel space: Communicates with hardware, manages resources
+		
+	- System calls
+
+4. Booting up
+	- Series of steps to go from power off to full OS running
+		- Go from cheap and simple hardware and concepts to launch more expensive hardware
+		  as we work our way up the stack
+	- MBR: What's an MBR, what's a partition? Why are things hardcoded?
+		- Hardcoded because hardware is not so smart, but it is cheap
+		- Bootloader
+
+5. Processes
+- fork(), exec(), wait() - helps us get child status back,  otherwise zombie processes :<
+- Why are fork() and exec() split up?
+	- We want to be able to manipulate environment of new process before it actually runs; used in:
+		- pipes
+		- redirection
+		- setting environment variables
+
+- Processes get *scheduled* to run
+	- Scheduler:
+		* chooses stuff to run (if they are ready to run)
+		* timer sends an interrupt at a predefined interval
+		* when that happens, program gets *preempted* and a new process runs
+
+- Process states, zombies, process control blocks 
+
+6. Init and daemons
+- Init - Runs a bunch of shell scripts to start up everything
+- Daemons - background processes; provide some kind of services for other processes (eg. ssh); still just regular old processes
+	- end in 'd' by convention; non-interactive
+**Not tested**
+- Basic init system is a bunch of shell script and run the scripts in order to start up everything
+	- But slow for really large companies
+	- Ubuntu created init system called upstart,runs everything in parallel but managed dependencies (based off of macOS, who stole it from Sun microsystems)
+		- systemd came out 10-15 years ago
+*************	
+
+7. Process execution strategies
+	- Full virtualisation: Read a program, check every instruction, run if OK
+	- Limited direct execution: Just run program, but when you see certain "privileged" instructions, make the kernel handle them: SYSTEM CALLS
+	- Direct execution: Run program and let it do whatever it wants (super fast, but dangerous)
+
+	- Permission level
+		** Some instructions are flagged with permission levels and can only be run with certain level of permissions
+		RISC-V Modes:
+		- Machine (can do anything)
+		- Supervisor (slightly less)
+		- User (much less)
+
+	Why do we care about any of this?
+		- System calls add overhead
+			- They affect everything, even Java programs
+
+	Sample question:
+	Strace showed a bunch of writes to file descriptor 1. What is happening?
+	- Printing to stdout
+
+**Not tested**
+usertrap() - seg faults usually, accessing memory that we shouldn't
+- have to break inside program (before and after it enters kernel i guess) and figuring out memory addresses 
+
+-------------------
+Lab 4 (really extra) CLI pipeline
+
+strace -c ls 2>&1 | awk -v p=0   '{ if ($1 ~ /[\-]{6}/ ) { p = p + 1 } else if ( p == 1 ) { print $NF }}' >> syscalls.txt

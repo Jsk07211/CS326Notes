@@ -1,0 +1,89 @@
+for project 2, figure out first
+
+tail /etc/passwd - shows last line of file
+head /etc/passwd - shows first line of file
+
+exec is a family of functions allow us to launch other programs
+
+after fork(): copy of my_program
+after exec():
+
+process id (PID) starts at 1 (init)
+int child = fork()
+	- the fork in the road between parent and child
+	- create a clone and have them do two different things (if else statements so they execute different parts of the code)
+	
+PID just keep counting up from there
+- we don't reuse the PIDs and once you hit the limit it'll go back to the start
+
+in general, the code will execute one at a time cuz scheduler but xv6 on VM is so slow we can see them interrupt each other
+
+whatever comes before and after exec gets completely wiped out and it will be a completely new program
+
+wait()
+- parent processes have to wait for their children to find out if they succeeded
+	- if child returns 0, it means it worked :) Cuz child returns the status
+
+why do we break into fork() and exec()?
+- create a process and send stdout to a diff location
+
+the new process can inherit several aspects of its predecessor
+
+environment variables:
+env (prints out all environment stuff)
+PATH,
+etc
+
+cooperative scheduling - runs entirely until complete and then pass it off to someone else
+	- but if a program hogs it or crashes then :')'
+context switch - swapping process control blocks
+
+when does a process get switched out?
+- when waiting for I/O device
+	- interleaves I/O and CPU usage
+
+timer? go through everyone
+processes that rely on other processes?
+	- coordinated using sockets/pipes
+
+when machine boots, we configure a timer to go off every n milliseconds
+sends an interrupt to the kernel every 30s
+then go find the next runnable process
+all context switch does is stores a snapshot of the register and saves it, then takes
+another program and runs that in CPU (so the info from the process is not lost)
+
+in all CPUs, there's a program counter to tell you what line you're on :3
+
+process control block
+- monitors everything
+
+only one active PCB (process control blocks) per CPU
+PCB includes variables, call stack, heap, etc
+
+as a program runs, the OS may interrupt to pause its execution
+
+basic state transitions
+
+when created, ready <-> running -> terminated
+             <-\       /->
+                blocked
+
+zombie processes
+- child process that is terminated but still has an entry in the OS process tabke
+	- cuz the parent never waited for the child, so the parent never cleans it up
+		- cuz exit status is never read by the parent
+
+termination:
+	1. clean
+	2. error
+	3. involuntary
+
+regardless of exit type, the OS:
+	- deallocates memory assigned to the process
+	- closes any open files
+	- releases locks
+	- cancels callbacks
+
+to add text files to xv6 when make qemu, must add the file into dependencies and recipes
+	- dependencies so when the file changes, Makefile will remake
+	- recipe so it will be included into the build

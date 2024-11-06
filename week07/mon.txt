@@ -1,0 +1,60 @@
+Project02 - Shell 'sh' 'bash'
+- UI for user space
+
+Starts up
+Prints ("$") // prompt
+reads command from stdin
+executes it!
+
+git checkout - reverts file back to how it was commited in the repo
+
+Implementation:
+	fork()
+	exec(...)
+
+			  > arguments for the exec
+exec(argv[1], argv_stuff);
+	^ where the program lives
+
+What does #!/bin/bash do?
+- Tells it what interpreter to run (interpreted as a bash script)
+- Take contents of this sccript and run them with the interpreter at the top
+- All scripting languages support # for comments so they can filter out the #!/bin/anckfmd
+	- Eg. Python
+
+#! - 'shebang'
+
+Finding #!:
+	- Regex?
+	- Built into shell
+	- Look @ first line of file
+
+	- It's actually supported by the kernel for compatability with stuff :)
+	- happens in exec()
+		- checks if shell script is ELF (regular binary program)
+
+ELF (program binary format)
+
+newshell stuff:
+int 
+main(void)
+{
+	printf("? ");
+
+	// read from the user using getline
+
+	// parse line into tokens (| ' ')
+
+	int pid = fork();
+
+	if (pid == -1) {
+		fprintf(2, "Womp womp!\n");
+		continue;	
+	} else if (pid == 0) {
+		exec(args[0], args);
+	} else {
+		int status;
+		wait(&status);
+		printf("Child exited with status: %d\n", status);
+	}
+}

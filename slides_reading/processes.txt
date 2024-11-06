@@ -1,0 +1,27 @@
+Processes are running instances of a program; init creates the very first processes
+- fork() creates clone() of an existing processes
+- start with init, init copies itself, and starts a new processes
+	- we know which process is the parent, which process is the child
+		- logic branches from here, allowing the two processes to do different work
+
+- Making a bunch of clones don't help us launch a different program though
+	- so we call exec()
+		- replaces memory space of clone with new program and begins its execution
+			- eg. clone of init is replaced by ls or something
+
+	After fork(): copy of my_program
+	After exec(): separate process running whatever you wanted to run
+
+PID starts from 1 (init), shell is process 2
+
+if child_pid == 0, we are the child
+if child_pid != 0, we are the parent
+	- since only the program that called fork() has that variable changed for them 
+
+A new process can inherit several aspects of its predecessor
+- Environment variables: System path, current working directory, global program options	
+- env prints out all environment variables
+
+Pipeline
+- Second process is dependent on first process, keeps waiting until first process is done
+

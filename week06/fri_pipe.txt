@@ -1,0 +1,106 @@
+Controlling flow:
+- Close ends we don't use
+
+Child processes closes FD 0 and reads from FD 1
+Parent process closes FD 1 and writes to FD 0
+
+- Make sure child and parent are doing the opposite thing
+- If they both close the same end, they're just blocking >:(
+
+Async Process Creation
+- mkfifo
+
+** Play around with mkfifo to prepare for the quiz
+
+Redirecting Streams: dup()
+- dup() lets us redirect streams by duplicating them 
+	- int dup(int fildes);
+
+To make standard output stream go through pipe:
+close(fd[0]);
+close(1);   	// close stdout (fd 1)
+dup(fd[1]); 	// stdout to pipe
+
+- dup duplicates its arg fd into the first unused file descriptor
+	- we control that by closing the one we want it duplicated into
+
+dup2(output, STDOUT_FILENO);
+
+open("output.txt", O_CREATE | O_WRONLY | O_TRUNC, 0666);
+- 0666 UNIX permission: Sets all the permissions, and later there is a mask that changes it accordingly
+- But xv6 doesn't have permissions because it only has root
+
+3 sets of permissions: Owner, group, everyone 
+3 flags: readable, write, executable (666 is readable and writable, 777 is all of them - the extra 1 for the flag)
+
+ls -ld .
+- drwx only lets you read and write in that directory
+
+I/O Redirection
+- dup doesn't close the file for you, so close it once you're done :D
+
+If we don't close anything,
+fd 0 - stdin
+fd 1 - stdout
+fd 2 - stderr
+fd 3 - log.txt (file we want to read into)
+fd 4 - log_cpy.txt (file we want to write into)
+
+^^ But then you hae to specify the exact thing?
+
+stdin - reads
+stdout - writes
+
+pipes don't have to operate on stdin and stdout, they can use read() and write() with the fds
+- but printf and fgets just read from stdin and stdout, so it's convenient for demo :p
+
+pipes are running concurrently
+
+in almost all cases, once you set up the process (the pipe), you don't need to replace stdin and stdout
+	- since you usually just want to read and write from the files, so we don't need to replace stdin and stdout
+
+	What child and parent do are completely isolated from each other
+	- That's how they run concurrently
+
+	dup() can be dangerous because you're praying that no other files are open during the process
+	- one pipe but 2 ends
+
+	Inter-Process Communication
+	Signals
+	Pipes
+
+	Play around with signal, redirection, and pipe code examples
+
+	* Why do we have IPC?
+		-> Sometimes processes have to communicate (share data)
+		-> Normally, we don't want them to mess with each other (Isolated for the most part)
+
+	* IPC Mechanisms
+		-> Files
+		-> Signals
+			- Software-based interrupts
+				- Kind of like notifications for softwares
+				- Signal handler are function pointers
+			- Do signals run on separate threads?
+				- No, program execution actually jumps into signal handler, then jumps back to wherever it was originally, like a context switch
+				- Can ignore signals
+
+			- Special signals that can't be ignored:
+				- SIGSTOP
+				- SIGKILL (kill -9 <pid>)
+
+			- How signals get transmitted to programs?
+			- How to send them (command line AND system calls)
+			- Pros/Cons
+				
+		-> Pipes
+			- For unstructured data
+			- How redirection between programs work?
+			- I/O Streams and file descriptors
+			- Pipe system call
+		
+		-> The rest are problem-specific
+
+How do files differ from pipes?
+- In the past, not enough storage, pipes don't have instantiate (store) the whole output at once before passing it on to the next program
+- No intermediate files to clean up after :)

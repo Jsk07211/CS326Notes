@@ -1,0 +1,92 @@
+# Disk Scheduling
+- Passing I/O requests directly to disk (underlying hardware) is inefficient
+  - Layering violation: Applications are required to understand hardware details
+  - Coordination: Spatial locality of requests not considered
+
+# I/O Scheduler
+
+## NFS (Created by Sun Microsystems)
+Stateless Protocol that runs on top of regular UNIX file systems
+- Why they generate that weird NFS file?
+  - Cannot provide locking since no active connection with server (like a web server)
+  - They use these fake lock files to make it seem like a regular file system
+
+## Block I/O Layer
+   - Plan where requests get laid out
+
+Algorithms
+### FIFO
+~ Handle I/O requests in a FIFO Queue
+~ Enhancement: Request merging
+  - Rather than issuing 1000 requests to read a 4MB file, merge logically contiguous requests together
+  - Implemented by noop scheduler
+    - Optimal for enterprise RAID systems, hardware schedulers/caches, VMs* and SSDs*
+Pros:
+  1. 
+
+Cons:
+  1. Not very efficient...
+
+### Elevator
+~ Attempts to minimise changes in direction
+~ Optimised for the physics of spinning disks
+  - Focus on overall throughput, not individual speed
+  
+- Always scans in order of increasing LBAs (logical block addresses)
+- Assign sequence numbers to request
+  - Forces requests to be flushed once enough accumulate (allows more disk head direction changes)
+- Mainintained as a doubly-linked list of I/O requests
+  - Finding insertion/merge point: O(n), NOT SCALABLE
+
+Pros:
+
+Cons:
+1. Throughput at the cost of latency
+   - Can result in starvation!
+
+### Deadline Scheduling
+~ Assign a deadline to each I/O requests
+~ Requests grouped by logical block addresses to optimise for disk head movements
+
+Pros:
+1. Good performance for VMs and SSDs handling multiple workloads
+   - Most benefit from request merging and LBA groupings
+
+Cons:
+1. Reads prioritised over writes because processes often block while waiting for data from disk
+
+# Anticipatory Scheduling
+~ Deals with deceptive idleness
+  - Process often appears to have stopped doing I/O, but they're simply preparing for the next request
+~ Allows disk to idle for a short period of time after servicing a request
+
+Pros: 
+1. Exploits spatial locality
+2. Throughput improvement :D
+
+Cons:
+1. Requires application-specific tuning to get best performance
+
+# Completely Fair Queuing
+~ Based on stochastic fairness queing 
+  - Each data flow is assigned to a fix number of queues with a hash function
+  - Frequently used to manage network traffic
+  - Stochastic: Randomly determined
+
+~ Served based on round robin bases
+
+CPU Scheduler coordinates with Disk Scheduler
+
+# SSDs
+## Write amplification
+- To rewrite one character, save the entire block to memory and merge with the parts you want I guess
+
+Write before read to same memory location --> Must lock the location during a write
+
+Wear out == Ability to store charge diminishes
+- Capacitance O.o
+
+Super block - File system level, stored at the first few blocks of the disk
+Separate blocks for the file system
+
+

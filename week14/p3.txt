@@ -1,0 +1,76 @@
+Memory Allocator
+- But why?
+  - Done often for good performance (For our specific problem!)
+    - Database software, games
+
+  - If written in Linux, can port it to Python and have it use our custom memory allocator
+
+If you want to write a game in Java,prealloc objects in advance so they never get garbage collected
+
+Memory for kernel space and user space are two separate things
+- Use copyout, otherwise when you try to access from user space, it crashes
+
+morecore() - in umalloc.c
+- adds memory to heap
+- sbrk(50) adds a bit more memory
+
+Heap
+ __________________ 0
+ |                |
+ |				  |
+ ------------------ 100
+ |				  | 
+ ------------------ 150 (added by sbrk)
+
+PTE_W - Page Table Enable Write
+
+Each process has its own page table
+- Page table maps physical to virtual memory
+
+Heap just needs writable chunks of memory
+
+Kernel says "process A has 1 chunk of memory at some location" - vm.c
+
+mappages - automatic mapping based off of offsets
+- But the mapping we did in lab03 (goldfish RTC) is manual, but same concept
+  - We said this address does this, but we could have easily had a different virtual address 
+    instead of having the same addr for both physical and virtual
+
+Writing a new malloc
+
+sbrk returns char *
+- Because it's a data type that maps to a byte 
+
+void *
+malloc(uint nbytes)
+{
+	return sbrk(nbytes);
+}
+
+Problems:
+Random address?
+- Memory locations are in sequential order
+
+free() - tells sbrk that it can allocate that memory space :) 
+
+When we allocate memory, we allocate extra space for the header (the header tells us if something is free or not)
+- Malloc takes up more memory than you allocate
+
+We can do a negative sbrk (go backwards), but we can't allocate sbrk in the middle of the heap
+- some consider sbrk old and outdated (right now it's an immovable chunk of memory that we can't break)
+  - OS hands out chunks of memory with different starting addresses
+    - Mac gives 4096 + amt_requested, and then you can split them up -- Use mmap instead
+      (huge chunks of memory split into smaller chunks of allocation)
+        - Only free it after the whole chunk is free
+
+** Otherwise sbrk you have to free the whole bottom chunk before you can start malloc-ing the center
+
+TODO:
+1. add header to these allocations
+  - size
+  - if it's free
+  - memory addresses
+2. Make free do something
+3. Do a negative sbrk when the bottom block gets freed
+
+** Making a linked list 

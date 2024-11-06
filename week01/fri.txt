@@ -1,0 +1,35 @@
+In C, function arguments are passed by value
+	- NOT pass by reference
+
+If you want to make outside changes, MUST use pointers
+	- Still passed by value (the memory address)
+		- the * means go to that memory address and do something
+
+*a = 'B' and a[0] = 'B' do the same thing, but the latter is easier to read
+
+& - address of operator
+
+int *x defines a pointer (pointer to an integer)
+
+C - arguments are both input and output, return is status code
+
+exceptions interrupt control flow (so a lot of system people don't like it)
+
+char a[] = {""}; {} makes it really obvious that it's an array
+
+strlen() gets the length by iterating through the string until you hit the null terminator
+
+character array != string (cannot printf character array since it has no null terminator so it'll print forever)
+
+array decay:
+c functions usually pass in the size of the arrays of the functions
+
+C convention T^T:
+void
+greeter(void)
+{
+	
+}
+
+pragma - suppresses warnings so compiler lets you continue compiling
+undefined behaviour - lets compiler do whatever it wants (BAD?? Idk)

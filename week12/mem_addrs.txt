@@ -1,0 +1,51 @@
+int global; 			// 1000
+int second_global; 		// No addr if it's not used
+
+C code undefined behaviour is great for compilers because they can do all kinds of tricks
+
+int main(void) {} 		// "first function" (a lie, start.sh runs first)
+- in ulib.c, there's a main wrapper that gets called first
+
+There is a giant gap between the stack and the heap is a lie!!
+- Numerically there, does not exist in memory!!
+
+The memory layout is system to system (I think; rewatch lecture)
+
+## Base and Bound
+  ___________________
+  |   A 			|
+  -------------------
+  |   B 		    |
+  -------------------
+
+  -> Adding extra chunks == segmentation
+  ___________________
+  |   A 			|
+  -------------------
+  |   B 		    |
+  -------------------
+  |   A 			|
+  -------------------
+
+
+
+## Memory Fragmentation
+- Moving things around is expensive; Copying things around closes gaps but it's not worth it
+
+## Memory Segmentation
+- Instead of mapping large, contiguous blocks of space to processes, we allocate segments of
+  memory as necessary
+
+  Segmentation :D
+
+  ___________________
+  |   Stack (for A)  |
+  -------------------
+  |   Stack (for B)  |
+  -------------------
+  |   Heap  (for A)  |
+  -------------------
+  |   Heap  (for B)  |
+  -------------------
+
+  - You can have fragmentation because of segmentation

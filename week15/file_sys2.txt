@@ -1,0 +1,39 @@
+# File Permissions
+- Basic: Each file has an owner and a group
+
+Basic Permissions can be applied to:
+- The user
+- The group
+- Everyone else
+
+By default, if executable, treated like a file script
+
+# Permissions
+## READ
+
+## WRITE
+
+## EXECUTE
+1. Files 
+2. Directories: Can enter the directory (not necessarily read it though!)
+   - May be in quiz!!
+
+chmod:
+rwx = 111 (7)
+rw- = 110 (6)
+r-- = 100 (4)
+-w- = 010 (2)
+  - You can echo into the file, but you can't read it!
+
+** But root can always do whatever it wants!!
+
+chmod o-w project04.txt : o for others, other people cannot write to file
+
+ugo+x (everyone gets x!) == +x
+
+rm permission is based on directory permissions!
+
+Can't give files to other people in UNIX
+
+bash protection for setuid shell
+

@@ -1,0 +1,11 @@
+Shell usually starts at 1
+
+bin - directory with all the binary code, but xv6 doesn't have one :3
+
+echo $PATH shows you all the bins, sbins are usually binary that uses the superuser's root
+
+!! - run last command
+
+Comments are included in the history (full form of the command)
+
+if 4 processes (for pipes), have child run the last program so everything has to wait for that child

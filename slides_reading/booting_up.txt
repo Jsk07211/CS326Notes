@@ -1,0 +1,92 @@
+Boot Process
+~ Series of tasks that ultimately get the operating system running
+
+Basic Input-Output System (BIOS)
+	- Starts iterating through disks connected to machine (after initialising hardware)
+	~ Boot Order (can be changed when installing new OS)
+	  - Determines the sequence in which computer looks for bootable devices
+	  - By default, most computers are set to boot from internal hard drive first
+
+Master Boot Record (MBR) - What BIOS iterates through
+	~ First 512 bytes on a hard drive
+	- Not used in MacOS
+	- Consists of two parts:
+		1. Boot code
+		   - Responsible for continuing the boot process
+
+		2. Partition table 
+		- Contains a pointer to where each partition starts
+			- i.e. Partition 1: Windows, Partition 2: Linux, etc
+		~ Partition
+		  - Segment of a disk
+
+	- MBR Contents:
+		Start Addr | Contents 						 | Size (Bytes)
+		0x0000 	   | Boot code						 | 446
+		0x01BE	   | Partition table (16 bytes each) | 64
+		0x01FE	   | 0x55 (bootable flag pt 1)		 | 2
+		0x01FF	   | 0xAA (bootable flag pt 2)		 | 2
+
+		- Since partition table is 64 bytes, only 4 partitions are possible
+		- MBR saved in 2 byte chunks, so 0x55 and 0xAA are saved in two chunks, but make up one bootable flag
+
+Finding a bootable partition:
+1. BIOS looks for a disk partition in partition table ending with 0x55AA
+	- Bootable flag; hardcoded
+
+2. Copies MBR into memory at 0x0000:0x7C00
+	- Segment 0, address 0x7C00; memory addr hardcoded
+	~ Segment
+		- Will go more indepth later, for now just think of it as a chunk of memory
+
+3. BIOS starts executing the first instruction at 0x7C00
+	- These offsets are hardcoded since making BIOS smarter makes it more expensive
+	- Executes the bootloader
+
+Bootloader
+~ Starts the OS
+~ Can understand a variety of file systems
+	- When creating new file system, update bootloader rather than modifying hardware ROM (BIOS)
+	- Can provide list of operating systems available in a multi-boot configuration
+		- One bootloader can bootload multiple OS
+	- Can handle larger disks
+		* BIOS is limited to a fixed number of partitions and disk sizes
+
+- Can only have ONE bootloader per disk
+	- Will override the pre-existing bootloader
+
+Finishing the Boot Process:
+- Bootloader starts the OS
+
+- In Linux, next stage is represented by an initial ramdisk (initrd; daemon process)
+	- Mini Linux image (has drivers and stuff that help start next phase of bootup)
+	- After booting, the first process takes over
+	~ Process
+		- Running an instance of a program
+
+- Finally, start the init process (PID 1)
+	- init starts all the other processes
+	- System services, startup tasks, restarting ssh if it crashes, etc
+	- Linux: systemd (that's what systemctl command is controlling)
+
+Init (PID 1/systemd)
+~ Direct or indirect ancestor of all other processes
+	- For the most part, convention to run daemon processes
+~ Parent
+	- The process that launches another
+~ Child
+	- The newly-launched process is the child
+
+** Kernel/Scheduler is usually considered PID 0, but they aren't technically processes
+	- Not really a PID 0, and PID 0 doesn't really exist
+** xv6 doesn't have bootloader; QEMU includes a boot ROM (read-only memory)
+
+** is shutdown/reboot an interrupt?
+	- Any hardware event, clock firing to do scheduling, typing, plugging devices in
+
+Sleep mode keeps power to the RAM; RAM saves the state
+- That's how you can open it up; kinda of like context switching
+
+** ls why no /
+- because it's in the root directory
+	- security risk, usually not like that 

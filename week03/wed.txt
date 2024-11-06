@@ -1,0 +1,46 @@
+strace - use to monitor system calls as the process run
+
+Check out BSD (Eg. Netflix), best network stack for the longest time, but Linux may have caught up
+
+strace ls
+	- Prints each system call for ls as they execute
+
+sl
+- steam locomotive xD
+
+ls > /dev/null
+- all written output gets thrown away~
+
+aliases come first, so be careful T^T
+
+can use strace to see what file stuff is trying to read
+can check summary to see which sys calls to improve speed
+
+Is it actually a syscall?
+- Sometimes the POSIX API maps directly yo underlying system call
+- man (3) stat (stdlib.h) vs man (2) stat (linux version)
+
+- system call version usually has more features since C library has to work on OS
+- using C library for portability
+
+fork() and exec() do not exist on linux, they call clone()
+- clone() let you decide what the parent and child share
+	- environment variables
+
+if the processes created threads, what do they share?
+- data structures (they share memory, but have different stacks)
+
+clone() lets you decide whether they share the same heap, open files, etc
+
+CLONE_NEWPID
+- creates a new process namespace (Shares nothing with th parent), child is assigned PID1 (init)
+- new process is contained in isolation from itself
+- How containers works :)
+	- Docker just took a bunch of Linux features and called them APIs
+	- If you run Docker on a Mac, they run it in a Linux VM
+
+CPU vulnerabilities (Spectre, Meltdown)
+- Made faster, but can leak data between programs without going through the processor
+
+How to modify the init system?
+- Go to init.c :3

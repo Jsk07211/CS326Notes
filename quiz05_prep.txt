@@ -1,0 +1,221 @@
+# Why disks?
+- "Primary storage" == RAM
+- "Secondary storage" == Disk
+
+'+': Bigger; cheaper; persistent data (data remains even after power goes out)
+'-': Slow; spinning, mechanical disks are more prone to failure
+
+# File System
+- How things get laid out on the disk (how we store data on it)
+~ Need an index to find things quickly
+
+# Inodes
+- Describes a single **unnamed** file (Metadata about files)
+- Contains (for xv6):
+  1. File type
+  2. Size
+  3. Number of links referring to it
+  4. List of blocks holding its contents
+
+# Dentry
+- Index of files stored on disk, stores file name information
+  - File names get mapped to inode numbers
+
+** Separating inode from file names gives us more flexibility
+
+# Links
+- Each file name links to an inode
+- Can have several file names all pointing at the same inode to create duplicates
+  (Uses same amount of disk space)
+
+- Link count of directories start at 2
+  1. '.' links to the directory itself
+  2. directory file name
+
+  '..' links to the parent directory
+
+- Deleting directories reduces the number of links (unlink operation)
+  - When file/dir link count == 0, effectively deleted
+    - If memory isn't linked, we can safely write over it
+
+** Symlinks change hierarchic file system from a tree into a directed graph
+  - Hard links always point to an existing file
+  - Symbolic links may contain an arbitrary path that points to nothing (orphaned)
+
+# ls -l
+<total # blocks for directory>
+<User perm><Grp perm><Other perm>  <Link count> <Owner> <Group> <Size (bytes)> <Last modification>
+
+# Fragmentation
+Approach 1:
+  1. Split disk into many small blocks
+  2. Pre-allocate larger **extents** made up of several blocks for file to grow into
+  - Reduces chances for a lot of interleaved tiny blocks
+
+Approach 2:
+  1. Defragment small files when you open them
+
+# Superblock
+- Keeps track of where the many small blocks are (A disk is split into many small blocks)
+- Superblock contains master file system information
+  - Block extents, locations, file system info
+- If we lose the superblock, FS may be unrecoverable
+  - Many FS have superblock backups, or distribute superblock info in small pieces across the disk
+
+# Mount Points
+- Can only have one root directory (even if we have more than one disk)
+  - We **mount** other disks underneath our root file system
+- Mount command:
+  mount -t fs_type /dev/sdb /some/mount/point
+
+  ^ We generally just specify the device and mount point, not the file system type
+
+# File Permissions
+  1. The user (Owner)
+  2. The group
+  3. Other users (everybody else)
+    - Basic Unix permissions model is that each file has an owner and a group
+
+- File types:
+  - : Regular file
+  d : Directory
+  s : Socket
+  p : Named pipe
+  c : Character device
+  b : Block device
+
+- Permissions:
+  1. Read
+     File: User can view file contents
+     Directory: User can view files in directory
+  2. Write
+     Files: User can modify a file
+     Directory: User can modify directory contents -- file/dir names
+       - Requires execute permissions too
+  3. Execute
+     Files: User can run it (script/binary). Must be readable!
+     Directories: Can enter the directory (Cannot read it nsecessarily)
+
+  r = 4
+  w = 2
+  x = 1
+
+# Changing Permissions
+- chmod (change mode): chmod 755 dir_name; chmod g+x dir_name (+executable grp perm)
+- chown (change owner): chown user filename
+- chgroup (change group): chgrp group filename
+- chown user:group filename: chown -R jsku:student *
+
+# Special Permissions
+## Sticky bit
+- Creating /tmp dir: chmod +t dir_name
+  - Only root and owner can remove/rename files
+  - Anyone can create files, but cannot delete other users files
+
+## Setuid
+- Run programs as different users
+- Setting setuid bit: chmod u+s file
+
+# HDDs
+  1. Platter
+    - Disk to induce magnetic charge on
+  2. Track
+    - Each platter has multiple tracks (cocentric circles radiating outward)
+  3. Spindle
+    - Holds the platters and spins them
+  4. Disk head
+    - Attached via arm, sweeps across platter to different tracks
+
+- HDD performance influenced by:
+  1. Spin speed (rotational delay)
+    - Amount of time taken to reach the data we want
+  2. Seek time (to get right track)
+    - Time taken to change tracks
+  3. Data position
+    - Outermost track spins faster than innermost track
+
+# Disk Scheduling
+Core Principles:
+  1. Layering violation
+    - Applications are required to understand hardware details
+  2. Coordination
+    - Spatial locality of requests is not considered
+
+  ** Passing I/O requests directly to underlying hardware is inefficient
+
+## FIFO Queue
+~ Coordinated submitting of requests
+  - Request merging: Merge logically contiguous requests together
+    - Implemented by noop scheduler
+    
+** Throughput > individual speed == latency (can result in starvation)
+
+## Elevator Algorithm
+~ Attempts to minimise changes in disk direction
+  - Focuses on overall throughput, not individual speed
+
+Implementation:
+  1. One-way scan elevator 
+    - Always scans in order of increasing LBAs (logical block addresses)
+  2. Sequence numbers are assigned to requests to control latencies
+    - Forces requests to be flushed once enough accumulates
+      - Allows more disk head direction changes
+
+  3. Maintained as doubly-linked list of I/O requests (O(n), not scalable)
+
+  ** Throughput > individual speed == latency (can result in starvation)
+
+## Deadline Scheduler
+~ Assign a deadline to each I/O request
+
+Implementation:
+  1. Requests grouped by logical block addresses to optimise for disk head movements
+  2. After servicing each group, deadline queue moved to check if any groups are being starved
+
+'+': Suited for multi-threaded workloads or small, random reads with sequential buffered writes (databases)
+
+** Reads are prioritised over writes because processes often block while waiting for data from disk
+
+## Anticipatory Scheduling
+~ Deals with **deceptive idleness*
+  - Processes appear to have stopped doing I/O, but are just preparing for next request
+- Allows disk to idle for short period of time after servicing request
+
+'+': Exploits spatial locality; throughput improvement
+'-': Requires application-specific tuning for best performance
+
+## Completely Fair Scheduling
+~ Each data flow is assigned to a fixed number of queues with a hash function
+  - Queues are serviced on a round robin basis
+  - # requests increase, likelihood of collisions increase
+    - Each thread group gets its own queue to avoid collisions
+
+Customisations:
+  1. Supports tunable idleness delay to handle deceptive idleness
+  2. Low latency mode: Supports deadline queues
+  3. Weighted fair queuing allows for I/O prioritisation
+
+# SSDs
+- No moving parts
+- SSD cells store a charge
+- Banks of these cells make up larger units of storage
+- Most SSDs contain multiple banks, combined via a microcontroller
+
+Each bank contains multiple blocks (~128-256 KB)
+Each block contains multiple pages (~4 KB)
+
+** Most SSD operations performed on block level rather than individual cell
+  (Most files take up more than 1 bit of space)
+
+'+': Can read from anywhere; Can support multiple reads at the same time
+
+## Writing to SSD
+  1. Erase block
+    - Since each block contains multiple pages, store the pages somewhere first
+  2. Read block into memory, update its state, write it
+
+  ** Write amplification: Actual amount of info physically written is a multiple of logical amount
+     intended to be written
+
+- To improve performance of write operations, SSD controller splits the request up
+  - Requests are handled concurrently by different cells

@@ -1,0 +1,19 @@
+Concurrency - running different things at the same time
+Parallelism - running multiple copies of the same thing at once
+	- they can share data with other (although we do want to minimise stuff because it goes funny?)
+
+buffer in memory that temporarily stores the pipe
+
+Before they used file descriptors, you'd call open on a filename, but how do you represent that you open that file?
+	- they would keep saying they would read from that file, but the problem is they were hardcoded to the path
+
+	i_node - a chunk of data that says fd points at this chunk of data
+		- size decided when designing the file system
+
+	context switching - we only save the register, the cache is more hardware (so we don't really)
+		- on windows, can pin process to a core to prevent it from moving around
+
+high performance computing looks at how to take a program and makes compiler optimise for cache hits
+- but you have to know something about the hardware for that
+
+interrupt supported by the hardware, trap table that says what to do when what happens, signal interrupt is function pointer to code to execute when this signal is received

@@ -1,0 +1,19 @@
+Linked List
+Header: How big they are; Are they free?
+
+Block list is not common in a memory allocator, but it makes debugging easier and we can print out memory alloc
+
+Use bitwise arithmetic to store the free status in the block->size
+
+Create functions to manipulate linked lists
+
+void add_free(struct mem_block *block) {
+	if (free_list_head == NULL) {
+		free_list_head = block;
+		free_list_tail = block;
+	} else {
+		free_list_tail->next_block = block;
+		block->prev_block = free_list_tail;
+		free_list_tail = block;
+	}
+}

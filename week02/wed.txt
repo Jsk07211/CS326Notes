@@ -1,0 +1,53 @@
+Demo of getline
+copy by value, when we pass in &line, pass in location of pointer, but passing in line passes in location of the memory
+- if using double pointers a lot, maybe don't?
+
+Booting Up
+- When you turn on your computer, it starts the boot process
+	- "pulling oneself over a fence by one's boostraps"
+	- Booting is a series of tasks that ultimately get the operating system running
+
+BIOS/UEFI
+	- BIOS: Basic Input-Output System (Will let you figure out what disk to boot from, allows for multiple disks)
+	- UEFI (newer version)
+
+Master Boot Record (first 512 bytes (old school format, but new format just has more partition, boot code space) on hard drive contain the MBR)
+	Part 1: Boot code
+		- Responsible for continuing the booting process
+	Part 2: Partition
+
+BIOS looks for a disk partition tha ends with 0x55AA (bootable flag, was arbitrary flag)
+Copies MBR into memory at 0x00000:0x7C00
+	- Segment 0, address 0x7C00
+	- Executes the first instruction at 0x7C00
+
+hexdump -C <executable>
+	- sees the hex of everything (raw code)
+	- * means all the lines from this to this are blank
+
+BIOS -> Find something to boot -> Bootloader -> init system -> then it boots :3
+
+1. Bootloader
+	- Bootloader can understand a variety of file systems
+	- Can handle larger disks
+
+	**Only one bootloader per disk; In the past, installing one will overwrite another 
+
+2(?). On Linux, initial ramdisk
+
+3. PID 1 (aka init)
+	- Starts the rest of the processes
+	- Direct/indirect ancestor of all other processes
+	- When one process launches the other, it is that process's parent
+		- Newly-launched process is the child
+
+	- Kernel or scheduler is usually considered PID 0, but they technically aren't processes
+
+	- There are different init systems :D
+
+ps -ef lets you see the processes in order
+
+RISCV version xv6 doesn't have a bootloader (provided by the hardware)
+bootloader -> kernel/entry.S -> kernel/start.c -> kernel/main.c -> user/init.c
+
+

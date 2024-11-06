@@ -1,0 +1,120 @@
+Inter-Process Communication (IPC)
+
+We talk about how processes are isolated:
+	1. Memory space
+	2. Illusion of complete ownership of the CPU (ALL THE RAM)
+
+But it's useful to have processes communicate with each other
+- Otherwise they would be containers (but containers can have sockets, etc)
+
+- Processes need to share data
+	- Plain text
+	- Images, videos, program
+	- Message containing commands or other types of info
+
+How to share data if no IPC?
+- Pipes
+	- Write into a file (but not written to a disk) and read by another program
+- Write a file and have the other program read from the file
+	- Files are the original IPC
+- Sockets
+	- Most common way of doing IPC nowadays
+	- Even if program A and program B are on different machines, they can still communicate
+- Shared chunk of memory (Mapped memory)
+	- Sounds dangerous
+	- Super fast and saves space	
+
+Files
+- The most basic form of IPC is done through files
+- Save a file to disk with one application, and open it with another application
+- Coordinate via file locks
+	- Only one program can have it at a time
+- Can lock an entire file or only a portion
+
+** application and process are interchangeable
+
+Message Queues (Don't use them!)
+- POSIX Message Queues provide a direct communication between processes
+- Messages are simple text strings
+- Queues are identified by a name
+- Great for text, but extremely old and out of date
+	- Not supported by MacOS
+	- Trash on Linux
+
+D-Bus (Modern way to send messages and more)
+- Multiplatform system message bus exists
+- Allows for IPC, process discovery, broadcasting
+- Additionally provides remote procedures
+
+Windows Messages
+- Window applications are event-based
+	- A process is automatically subscribed to a default set of events
+		- Eg. when machine is about to go to sleep, moving mouse; WM.mousemove)
+			- For long running app, long running loop
+		- Can subscribe to more if needed
+
+Shared Communication Channels
+- Very tied to the OS, they all tend to support their own types of messaging protocols
+- Most efficient way to communicate is influenced by design of kernel
+
+Signals
+- Signals are software-based interrupts (as opposed to hardware-based interrupt)
+- Kernel uses signals to inform processes when events occur
+	- But Windows does it better :') (written after UNIX stuff happened, so they learnt a lot)
+		- UNIX is not polling for messages
+		- If it's sleeping during a signal, it gets frozen and it jumps to the function for the sigint_handler (so if you don't have exit() then it doesn't work)
+			- Signals don't use threads, they pause execution of main thread, execute the handler and then go back to where they were in the first place
+			- Problems that arise depending on when we receive the signal:
+				1. Writing video to disk and it changes something, could lose data
+				2. Sleep gets interrupted, so it doesn't finish sleeping (if you have to wait a certain amount of time for something to happen)
+
+				- For Windows, ctrl C is an event and adds it to queue so it doesn't disrupt anything :3
+
+				- kill sends a signal that makes some processes kill themselves :)
+	
+	- Does not exist in xv6
+
+Terminating a Process
+- Each signal is prefixed with SIG
+- Process can determine how it handles these
+- If cannot ctrl c, disable from another terminal, or ctrl z and kill %% (kills last suspended process), or ctrl \
+	- ctrl z (SIGSTOP) and sigkill (kill -9) cannot be blocked by anything
+
+- stty sane (brings back the default in case you kill stuff with signals willy nilly)
+	- or can run top to reset everything
+
+SIGSTOP pauses a running processes, SIGCONT continues a process, the combi is good for minimising processes
+
+Alarm (another useful signal)
+Custom signals (can handle program-specific signals)
+- SIGUSR1 and SIGUSR2 (only 2 :<)
+
+void sigint_handler(int signo){...}
+- signo is included by the kernel; signals have to match an integer argument
+
+signal(SIGINT, sigint_handler)
+- sigint_handler is a callback (pointer to a function)
+
+Signal Transmission Process
+1. A process initiates the signal
+2. Kernel receives the signal request
+3. Permissions are verified
+4. Signal is delivered to the process
+
+Reacting to a Signal
+- If process is busy, it will be interrupted by a signal
+
+** Seg faults are signals
+	- It'll reset signal mask and fire the segfault again (so we have a chance to go back and check if it's still running after it happens)
+		- How exceptions work, little window where we can jump out and not executing
+		- since xv6 has no segfault (backs up program before it dies), we get usertrap() WHICH SUCK
+
+Signals
+- Pros: Simple
+- Cons: Simple; jumps in logic so weird program
+
+Signals don't use threads
+- Similar to Context Switching; when signal is received, it is given top priority to be executed
+	- Switches to immediately execute the code that handles the signal
+
+

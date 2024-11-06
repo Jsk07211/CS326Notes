@@ -1,0 +1,16 @@
+char *name = 0; <-> char *name = 0x0; <-> char *name = NULL;
+- gave it a memory location but did not allocate memory space
+
+valgrind --leak-check=full./a.out  (like gdb, but it tells you the problem)
+
+C library is in the user space
+- designers did not want to make it seem like C is the only language you can use to work with them
+
+- user.h gets the implementations from user/ulib.c
+
+/r is return on windows 
+
+STDIN_FILENO 0 (in user.h)
+gets only reads from stdin
+
+tldr pages :3 less text and cats onto terminal (gives actual examples too)

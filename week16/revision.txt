@@ -1,0 +1,56 @@
+"Secondary storage" is good because it doesn't lose everything when the power goes out
+"Primary storage" is RAM
+
+Disks are:
+1. Bigger
+2. CHeaper
+3. Slower
+
+** Disks are massively slower than everything else (both SSDs and HDDs)
+
+File system: How things get laid out on the disk (how we store data on it)
+- More advanced than simple linked list since we need to index quickly
+
+
+# Inodes
+- Way to to store metadata, but not their names
+- dir entries hold file names
+
+- ln(): link lets us link multiple file names to the same underlying file data
+
+Directories have a link count of two because of: . (current directory) and .. (previous directory)
+
+Files get deleted via 'unlink', and they are removed once their link count hits 
+- When link_count == 0, they can now be overwritten
+
+# Superblocks
+- Disks suffer from fragmentation (just like memory)
+- Superblocks store main FS (file system) information (Don't lose the superblock)
+  - Maybe have superblock backup?
+
+sd* are the hard disks on gojira
+- If we want to destroy the hard disks, just fill enough zeroes to clear the superblock
+
+Making a disk:
+bs = 1M: block size = 1 MB
+count = 1000: How many of these blocks we want
+
+# Permissions
+- Know how permissions work for both single and multi-user systems
+- Basic permissions: rwx, sticky bits, setuid bit, file type
+
+** How permissions work for directories is important!
+
+Octal permissions:
+chgrp (change group)
+chown (change ownership)
+chmod (change mode)
+
+HDDs
+Rotational delay, seek time, which part is faster to read/write
+
+# Scheduling
+- Know everything in detail except CFQ algorithm 
+
+Reading/Writing SSDs
+- 

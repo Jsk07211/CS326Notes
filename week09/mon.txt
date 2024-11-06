@@ -1,0 +1,95 @@
+# Context Switching
+- Changing execution from process to process requires context switching
+	- Saving and restoring the process control block
+
+** Scheduler is not involved when switching between user and kernel space
+	- Most of the times, context switching is not involved, only permissions switch
+
+Recap: PROCESS CONTROL BLOCK
+1. Executable machine code
+2. Memory (isolated from other processes)
+	- Call stack
+	- Heap
+3. Metadata
+	- Permissions, ownership
+	- Open files and access isolation
+	- Environment variables
+4. Context (Context switching owo)
+	- Registers
+	- Stack pointer, program counter
+	- Memory addressing
+
+# When do we switch?
+- Accomplished via interrupts
+	- OS configures a hardware timer to fire on a set interval
+
+	- But if you have a low-powered device? (Eg. Steam deck)
+		- The interrupt has longer intervals to save power
+
+# Interrupt Handling
+1. The CPU receives a hardware event every X ms
+2. Trap table is used to determine what to do (what code to run) when the hardware timer fires
+	- Trap table is just a bunch of function pointers; when this happens do that
+	- Moves us back to kernel space
+3. Save current PCB and replace it with the next in **run queue**
+	- Preemptive multitasking
+	- Processes do not have to explicitly yield control to others
+
+Go - Allows context switching to be run in user space
+
+# Scheduling Algorithms
+
+## Scheduling Concerns
+1. How long each process runs for
+	- Scheduling quantum
+2. When jobs start or stop
+	- At boot: Lots of processes starting at once
+	- During run time: Less frequent start/stop 
+3. Whether the process performs I/O
+
+CPU runs on a faster clock than a hard drive :D
+	- Since hard drive has moving parts, a lot slower
+4. Process priorities
+	- Kernel threads, multimedia, games, etc
+
+	Niceness == gives up CPU more often
+	Priority == Gets CPU more often
+		- rt == real time (highest priority)
+		- Controls physical space, must react to human-level response
+		- Anything with a k is a kernel program, usually runs at higher priority
+
+RT Operating Systems have more capabilities for interrupts so it can take over more often
+
+Infotainment system vs what controls the gas pedals and stuff
+
+# Scheduling Metrics
+1. CPU Utilisation
+2. Throughput
+3. Turnaround time
+4. Response time
+
+## CPU Utilisation
+- Amount of time the CPU spends doing productive work
+	- A bad scheduler won't keep the CPU pipeline full of tasks
+	- Utilisation: 1 - t(idle)
+		- t(idle) is the fraction of the time that we are idle
+
+## Throughput
+- Number of processes that are completed per time unit: 
+complted/t
+	- Eg. 54 processes per second
+		- High: ~100
+		- Moderate: ~50
+		- Low: 1
+
+	- When does throughput matter?
+		- Not if your machine is not really running anything
+		- Google servers (throughput >> speed) since they get a lot of requests
+
+## Turnaround Time
+- Amount of time from process arrival to process completion: t(turnaround) = t(completion) - t(arrival)
+	- Good turnaround time = gradual process, rather than everything all at once
+
+## Response TIme
+- How quickly a process starts running after it arrives (submitted/launched)
+	- t(response) = t(start) - t(arrival)

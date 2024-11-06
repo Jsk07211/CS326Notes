@@ -1,0 +1,10 @@
+# Scheduling
+## Scheduling Metrics
+
+. Turnaround time
+  * t(turnaround) = t(completion) - t(arrival)
+. Response time
+  * t(response) = t(firstrun) - t(arrival)
+    - Better for each process to run earlier, but smaller chunks of time
+
+## Scheduling Methods

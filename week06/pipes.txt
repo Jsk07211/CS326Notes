@@ -1,0 +1,68 @@
+Pipes are a common way for programs to communicate on UNIX systems
+- Useful for sharing unstructured data (such as text) between processes
+
+Pipes
+Pros:
+	- More flexible
+	- Easy
+	- No coordination required (No special format required)
+	
+Cons:
+	- Security (Readable)
+	- More flexible
+	- Slow 
+		- Hard to parse unstructured data (May have to use awk to get it into desired format)
+		- I/O Stuff
+
+Generally, text-based formats are slow
+Eg. JSON is text-based, but it slow-ish to parse 
+
+Microsoft Powershell is object-oriented (more structured data, but more work to send data between things)
+
+Both files and pipes are referenced by file descriptor (so they use the same code)
+>> - a different type of redirection 
+| - pipes can be used for redirection also
+
+which and whereis
+
+some builtin functions:
+	- history (only the OS knows your history)
+	- cd 
+		- the child would only change its own working directory, so the parent needs to be the one to handle it (hence builtin function)
+	- jobs
+	- exit (makes the program terminate)
+		- the child can only kill the parent if they send a kill signal, so maybe just better to have it as a builtin function
+
+SIGPIPE - Connection is broken (ssh uses pipes)
+
+Cat gets buffered by the kernel and your program can read that data
+- 10 items in pipe, all run concurrently
+- Buffer is full, and schedules the output code to run next so it can clear the buffer
+- Slow down programs going too fast by blocking them
+
+- Data loss via pipe?
+	- If receiving program dies, they remove the data from the buffer
+
+I/O Streams
+0: STDIN
+1: STDOUT
+2: STDERR
+
+If pipe cannot access file, gets set to stderr
+- can change by doing 2> (send stderr to somewhere else)
+
+- stderr prints immediately (slower, more system calls); stdout buffers (won't print until it has a full line)
+
+pipe() returns input and output fd of the pipe
+- program starts, create program, and pipes data into it
+
+mkfifo to create a named pipe (has a pipe data type); can write into it
+
+eg.
+	mkfifo hello-pipe
+	cat hello-pipe (will be blocked until hello pipe receives data)
+	ls / > hello-pipe (can do in another terminal, just send some data to pipe)
+
+	ls /blah > hello-pipe (but if /blah doesn't exist, it'll still send an EOF token, so cat knows to close)
+
+QUIZ: MAINLY IPC STUFF

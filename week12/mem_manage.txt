@@ -1,0 +1,74 @@
+Why do we care about memory?
+- RAM is really fast (faster than writing everything to disk)
+
+# Mapped Memory
+- In multi-threaded applications, each thread shares access to the heap; 
+  We can also share regions of memory between processes
+
+## Mmap
+- mmap asks the OS kernel to reserve a portion of memory and allow other processes to access it
+- mmap takes a file descriptor (possible to memory map a file)
+  - More efficient than reading/writing buffered data to/from disk manually
+
+  - Here's an array that represents the blue ray disk you mmaped for; 
+    OS handles all the memory management in the background
+      - So even if we have 4gb of RAM, we can still read from a 128gb disk
+      - Useful for reading massive files :D
+
+## Working with Mapped Memory
+- After call to mmap completes, participating processes are given a void pointer (Eg. malloc)
+
+## Use Cases
+- Once set up, processes do not have to go through the kernel to communicate
+  - Better performances
+- It's more error-prone than other IPC mechanisms
+  - If a cooperating program writes to memory incorrectly, it's game over
+
+** RAM Disk - disk that only exists within memory
+  - But when the power goes out, you lose everything, so copy the info somewhere!
+
+mmap first param usually NULL (kernel decides the address)
+
+
+Reader doesn't block, it uses a lot of CPU because it just keeps checking
+
+** umalloc doesn't actually call mmap, why?
+- We use brk and sbrk to allocate and deallocate memory; Memory as one giant array that grows and shrinks,
+  so malloc just bumps up the size of memory allocated to the process
+  - so the implementation is a fake implementation that allocates 4mb and lets you grow and shrink
+    - macOS always uses mmap, Linux uses both (brk, sbrk for small allocation; mmap for big allocation)
+
+- allocator is lazy in C, so it reuses chunks of C that's not needed anymore
+- the OS doesn't do that, so when it hands you a new chunk of memory, it clears it out
+  - Dangerous otherwise, if it used to store a password, you don't want another process to be handed
+    that the password, so OS wipes it out before handing it over
+
+## Memory Management
+Virtualising Memory
+- How do we share the CPU? Scheduler :D
+  - But we can't do that with memory!! It's huge!!
+
+xv6 has a fixed number of processes that can run
+
+The best way to handle scheduling problems is to LIE :D -- Virtual Memory!!
+
+Minimum amount of space required for instructions, variables, etc
+But you can steal from other processes! Paging :D
+
+If we run program outside GDB vs inside GDB, GDB sets up its own fake addresses that it can control
+- But they're all referring to virtual memory
+
+Memory Management Unit (MMU)
+- Translate fake addresses to real ones
+
+Mapping from logical to virtual:
+- Base and Bound addresses
+  - If program asks for 0x20, give it base + 0x20
+
+  if req < base: out of bounds
+  if req > bounds: out of bounds
+
+  bus error, seg fault, usertrap
+
+  - If we wanna move the program up in memory, just up the base :D
+    - like brk and sbrk

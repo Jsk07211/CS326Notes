@@ -1,0 +1,70 @@
+# Disk Tradeoffs
+
+  Pros:
+    - Cheap
+    - Big
+    - Lots of connectivity options
+    - USB External, SATA, etc
+
+  Cons:
+    - Slow
+    - Mechanical disks are more prone to failure
+
+# Simplistic View of Disks
+  - Giant array of bytes
+  - Divide space based on file systems (rather than each process getting one)
+    - Files are a better abstraction for data stored on disks because sharing happens much more often
+	  - File system defines how files are organised and laid out on the disk (Matters )
+
+  - If Mac, highly likely APFS
+  - If Windows, NTFS
+
+# Basic File System
+  - Trees
+  - Pointers to files (files stored in a separate area)
+  - When we add files, we can just append it to the file area
+
+  - Iterating through the disk is really slow
+
+# Metadata
+  - For xv6, it is inodes
+    - inodes contain file ownerships, permissions, serial numbers, timestamps, size info, etc
+      - but not file names! We've decoupled their names from their metadata
+
+  Indexing: dentry (directory entry)
+    - File name links to an inode, multiple file names can point to the same inode
+
+  Linking: ln
+    - ls -l number shows # of links
+    - If you change any of the files that link to the same inode, it changes for all
+
+    - Hard links not allowed for directories
+
+    - directories (when made) already has 2 links - always exist in each directory
+      - . (links to current directory)
+      - itself, the filename
+      
+      - .. (links to parent directory)
+
+      ls -ld . - # of links == number of directories within current directory
+
+      symlinks are like aliases on macOS (when you type ls -ld, it'll show -> to the link)
+        - Stands for symbolic link
+
+      When link count drops to 0, file is gone (in system, but it's still on the disk, just marked available for reuse)
+		- rm is really just unlink
+
+# Disks
+  - Data written to disk from the centre and expands radially
+    - Sometimes there is padding to push the more important stuff outward
+
+  - Harddrives start from the outside and moves inwards
+
+  - Superblock is also stored on the disk itself!
+
+# Mount Points
+  - If we have multiple root directories, no we don't. We take the disk's root directory and put it under ours.
+    - In Windows, they do like C: instead (but they've since added support for Linux's method)
+
+## Disk Structures
+   Links that extend across file systems

@@ -1,0 +1,94 @@
+FIFO: First In First Out
+
+- Processes are executed completely in the order they arrive
+	- If A arrives before B, A executes completely, and then B executes completely
+
+'-': Cannot have any dependencies
+'-': Cannot really prioritise anything
+'-': Convoy effect
+	- Short tasks have to wait for longer tasks
+
+Sample Usage:
+Hadoop MapReduce: FIFO works fine, because they're all gigantic tasks that works for hours
+
+SJF: Shortest Job First
+
+- Prioritise Small Tasks
+	- Little jobs get finished quickly
+	- Long jobs are delayed, but the impact is not as noticeable
+
+'-': How do we know how long it runs for before it even executes
+	- This research question is still relevant today :)
+'-': Non-important tasks may clog up the pipe
+'-': If a shorter task arrives later, it may get swapped to jump the queue
+'-': Will still have a convoy effect once the long program starts running
+
+STCF: Shortest Time to Completion First
+- Run whichever task will complete first and preempt running process that don't meet the criteria
+	- Preemption
+
+'-': Deprioritises large tasks the most
+'-': Resource starvation
+	- OS continuously receives small tasks, the large task may never get a turn to execute
+
+Round Robin
+- Scheduling tries to be as fair as possible
+	- Uses preemptions, all processes get scheduling quantum (time slice)
+		- If there are 10 processes, each gets 1ms 
+
+'-': Too small, not much actual work getting done, most effort expended on context switching
+'-': Too large, programs aren't responsive (long wait times :<)
+
+Priority Scheduling
+- Allows some tasks to be considered more important than others
+
+- Processes (unless they are root) can only increase their niceness, not their priority	
+
+- Can inherit priority from parent or priority can be set manually
+	- usually, the default priority is 0
+	- can also have hierarchy (kernel processes usually have higher priority)
+
+- We sort to get the highest priorities
+
+Lottery Scheduling
+- Each process is allocated lottery tickets
+	- Not all of them get the same number of tickets though!
+	- Can dynamically adjust number of tickets based on the number of processes you have
+
+'-': If processes frequently start/stop, assigning tickets becomes difficult
+'+': Great for consistent tasks! Eg. server stuff
+
+RTOS: Real-Time Operating Systems
+- Operate in embedded applications and have different scheduling constraints
+	- Processes expected to be scheduled at certain intervals and run for fixed amount of time
+
+SCHEDULING WITH I/O
+- When a process performs I/O, it BLOCKS to wait for the I/O
+	- You can execute stuff with other THREADS
+
+- ADDING RULE: If you start to do I/O, swap out the process! :)
+
+Multiprocessing
+
+Linux approach:
+Task - runnable unit of execution
+Core - runs the tasks
+
+-> scheduler does not distinguish between a thread or a process for Linux
+
+- Each processor gets its own process RUN QUEUE
+	- OS assigns new processes to queues based on processor load
+
+When you switch processes in and out, it messes with the caches :< 
+- Process affinity:
+	Try to run a process on the same core as often as possible
+
+	- HARD AFFINITY: Always scheduled to the same CPU
+	- SOFT AFFINITY: Best effort to schedule to the same CPU
+
+Migration
+- PUSH MIGRATION: OS finds too many processes in one run queue, moves them to balance it out
+- PULL MIGRATION: OS finds an empty run queue, so it moves a process from a full queue
+	- We see both, but the prof prefers pull migration
+
+## THE INTERRUPTS ARE HARDWARE INTERRUPTS

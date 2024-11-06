@@ -1,0 +1,53 @@
+# Handling a Segfault
+- When illegal access takes place, MMU will generate a hardware trap
+- Executes some privileged code in kernel space
+  - When I have this type of trap, print out what went wrong and stop the process
+    (For xv6, but usually we send SIGSEGV signal)
+
+  - Set up C version of try-catch with goto
+  - Signal sets up flag, so when we go back to main code it can exec the goto
+
+## Things to Keep Track Of
+1. Type of segment
+2. Base addr
+4. Protection bits
+  - Set up access restriction
+5. Execute bit
+  - Whether or not location in memory can be executed by the CPU
+    - Eg. it could exec a jpeg if we allow the two to mix
+  - Only applies to a segment
+6. NX bit
+  - Allows entire regions of memory to be marked as non-executable
+  - Flags ENTIRE REGION
+
+< Look at his slides for stuff >
+
+** STACK AND HEAP ARE READABLE AND WRITEABLE **
+- Only if exec bit is true :)
+
+MMU is more complex now, how does this impact context switching?
+- We have to store different segment locations, sizes, permissions, etc
+  (Not just a single base+bound)
+
+** But xv6 doesn't have a lot of this stuff (No segmentation at all!)
+
+## Dealing with fragmentation
+- With segmentation, the likelihood that things are fragmented increases
+  - 10 processes with segmentation == 50 chunks we have to deal with 
+    (stack, heap, static data, literals, instructions)
+    - More chunks == more fragmentation
+
+## Free Space Management (FSM)
+- When allocating new segment, we must find a suitable region of free space
+  and put it there
+
+Our goal: Deal with fragmentation
+When we want to allocate memory, how can we reuse existing space?
+
+- Smaller fragments left over suck ass
+
+** Most operating systems use combinations of these algorithms
+  - Use the different strategies in different scenarios
+
+
+

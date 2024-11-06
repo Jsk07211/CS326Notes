@@ -1,0 +1,4 @@
+We're running RISCV arch with an xv6 OS
+
+make clean whenever you use pre-processor macros (Eg. LOGGER)
+- Created by compiler at compile time, so they do a copy paste into your code

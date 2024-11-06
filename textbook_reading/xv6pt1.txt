@@ -1,0 +1,69 @@
+I/O:
+fork() keeps a copy of file table
+	- If child closes file, it stays open for parent
+	- If child reads/writes (changes current file offset),
+	  then the pointer is also changed for the parent file
+	(Since they are derived from same original file description by sequence of fork() and dup() calls)
+	
+between fork() and exec(), shell can redirect child's I/O without disturbing I?O setup of
+main shell
+	- if forkexec() combined, shell may have to modify its own I/O setup and then undo the changes
+
+fork() returns PID of child process to parent, and 0 is returned to the child
+- so if (fork() == 0) is true if we are in the child program
+
+read() blocks until it is impossible for new data to arrive
+-> important for child to close the write end before reading into that file
+
+paths that don't start with / are considered relative paths
+/ is the root directory
+
+mknod() creates new device file
+	- mknod("/console", 1, 1);
+		- creates special file that refers to a device
+		- file device has major and minor device numbers the args(1,1) in this case,
+		  uniquely identifying a kernel device
+		- when process opens device file, kernel diverts read() and write() system calls to
+		  the kernel device implementation instead of through file system
+		  
+inode - underlying file
+	- holds metadata of file
+		- type (file/dir/device)
+		- length
+		- location of file content on disk
+		- number of links to the underlying file
+links - multiple names of the file (file name is distinct from the file itself)
+
+fstat() retrieves info from inode that fd refers to and fills in struct stat
+
+#define T_DIR 1		// Directory
+#define T_FILE 2	// File
+#define T_DEVICE 3 	// Device
+
+struct stat {
+	int dev; 		// File system's disk device
+	uint ino; 		// Inode number (underlying file unique no.)
+	short type;		// Type of file
+	short nlink; 	// Num of links to file
+	uint64 size; 	// Size of file in bytes
+}
+
+open("a", O_CREATE | O_WRONLY);
+link("a", "b"); 
+- creates another file system NAME referring to the same inode as an existing file
+- creates new file under both names "a" and "b"
+- reading & writing from a == reading & writing from b
+
+unlink()
+- removes name from the system
+- file's inode and disk space w content are only freed when nlink == 0 && no fd points to it
+
+temporary inodes:
+	fd = open("/tmp/abc", O_CREATE | O_RDWR);
+	unlink("tmp/abc");
+
+	- idiomatic way to create temp inode w no name that is cleaned up when process calls close(fd) or exit()
+
+cd is built into shell and has to run in shell since if a fork() is created and child process changes the directory, it will 
+ONLY change the CHILD'S working directory, not the parent's (shell's) working directory
+- but functions like rm, mkdir, ln are callable from shell as user-level programs
